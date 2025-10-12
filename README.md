@@ -9,8 +9,7 @@ The goal of the tutorials is to show how to navigate spike sorting outputs to re
   1. References and links
   2. Installing a **python environment**
   3. Brief description of Neuropixels hardware
-  4. Introduction to file formats
-  5. Notebook tutorials
+  4. Notebook tutorials
 
 ### Brief description of Neuropixels hardware
 
@@ -99,4 +98,55 @@ In short, the _minimum requirements_ for an **acquisition computer**  are:
 
 ### Installing a python environment
 
+
+### References and links
+
+#### Hardware:
+
+| Resource | Category | Link | Maintainer |
+| --- | --- | --- | --- |
+|**Purchase probes and hardware** | Hardware | [Neuropixels.org](https://www.neuropixels.org/) | imec |
+|What to buy and how to configure a system | Hardware | [SpikeGLX - PXI system requirements](https://github.com/billkarsh/SpikeGLX/blob/master/Markdown/SystemRequirements_PXI.md) | Bill Karsh | 
+|**MANUAL for the 1.0 probes** | Documentation | [Manual](https://www.neuropixels.org/_files/ugd/832f20_ba7f3e9e639b49809458cf64d76abdcc.pdf) | imec
+
+#### Acquisition software:
+
+| Resource | Category | Link | Maintainer |
+| --- | --- | --- | --- |
+|**Download software, overall reference, how-to videos** | Software | [SpikeGLX](https://billkarsh.github.io/SpikeGLX/) | Bill Karsh|
+| Download and use software | Software |  [Open-ephys PXI](https://open-ephys.github.io/gui-docs/User-Manual/Plugins/Neuropixels-PXI.html) | Josh Siegle|
+
+
+#### General and courses:
+| Resource | Category | Link | Maintainer |
+| --- | --- | --- | --- |
+| Neuropixels wiki | General/Getting started |  [Neuropixels WIKI](https://github.com/cortex-lab/neuropixels/wiki) | Nick Steinmetz |
+| **Ask for help, share knowledge, stay up to date** | General/Slack | [Neuropixels Slack](https://neuropixelsgroup.slack.com/join/shared_invite/zt-1jibcdbhe-uNyp8q522L4S0apVKwoC6A#/shared-invite/email) | Community? |
+|**UCL course videos** | General/Getting started | [UCL courses](https://www.youtube.com/channel/UCChkhcGBVElY8KLqIYc00gw/playlists) | Cortex Lab|
+|Allen Mindscope and ephys course | In-person course | [Allen course](https://alleninstitute.org/events/2022-neuropixels-and-openscope-workshop/) | Allen Institute|
+|General course with Neuropixels workshop | In-person course (general) | [Optical Imaging and Electrophysiological Recording in Neuroscience](https://parisneuro.ovh/) | Boris Barbour |
+
+#### Surgery and other protocols
+| Resource | Category | Link | Maintainer |
+| --- | --- | --- | --- |
+|Allen protocol for acute recordings with multiple neuropixels | Acute protocol | [Durant et al. 2021](https://www.nature.com/articles/s41596-022-00768-6)| Nature Protocols |
+|  Chronic implant for 1.0 | Chronic design | [Juavinett et al. 2019](https://elifesciences.org/articles/47188)| eLife |
+| Chronic implant for 1.0 for mice and rats | Chronic design | [Luo, Bondi et al. 2019](https://elifesciences.org/articles/59716) | eLife |
+| Chronic implant for mice and rats 1.0 and 2.0 | Chronic design | [van Daal, Aydin, Michon et al. 2021](https://www.nature.com/articles/s41596-021-00539-9) | Nature protocols |
+| Chronic implant with multiple parts | Chronic design | [Jones 2023](https://www.protocols.io/view/chronic-recoverable-neuropixels-in-mice-e6nvwjo87lmk/v1) | protocols.io |
+
+
+#### Post-processing and analysis:
+
+| Resource | Category | Link | Maintainer |
+| --- | --- | --- | --- |
+|**Pipeline to do preprocessing with SpikeGLX tools** | Post-processing and sorting | [ecephys_spike_sorting](https://github.com/jenniferColonell/ecephys_spike_sorting)| Jennifer Colonell|
+|**Tutorial of how to sort neuropixels with SpikeInterface** | Post-processing and sorting | [SpikeInterface](https://spikeinterface.readthedocs.io/en/latest/how_to/analyse_neuropixels.html) | SpikeInterface team|
+|Allen pipeline for spike sorting | Post-processing and sorting | [ecephys](https://github.com/AllenInstitute/ecephys_spike_sorting) | Allen Institute|
+|Kilosort spike sorting algorithm | Sorting | [Kilosort](https://github.com/MouseLand/Kilosort)| Marius Pachitarius|
+|MountainSort spike sorting algorithm | Sorting | [MountainSort](https://github.com/flatironinstitute/mountainsort5) | Jeremy Magland|
+|IronClust spike sorting algorithm | Sorting| [IronClust](https://github.com/flatironinstitute/ironclust) | James Jun and Jeremy Magland |
+|**Tutorial on how to use Phy for manual curation** |  Manual curation | [Manual curation with phy](https://phy.readthedocs.io/en/latest/sorting_user_guide/) | Nick Steinmetz |
+| Allen Visual Coding neuropixels tutorial| Tutorial |  [Allen Neuropixels](https://allensdk.readthedocs.io/en/latest/visual_coding_neuropixels.html) | Allen Institute|
+| Tutorial to look at data with CellExplorer| Tutorial | [Cell Explorer](https://cellexplorer.org/tutorials/neuropixels-tutorial/) | Peter Petersen|
 
