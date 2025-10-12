@@ -6,7 +6,7 @@ The goal of the tutorials is to show how to navigate spike sorting outputs to re
 
 ## Outline:
 
- - [Brief description of Neuropixels hardware](#brief-description-of-neuropixels-hardware)
+ - [Brief description of Neuropixels hardware](#brief-description-of-neuropixels-hardware) see also [the sheet](sheets/neuropixels_hardware_overview.png)
  - [Installation](#installing-a-python-environment)
  - [References and links](#references-and-links)
 
@@ -16,7 +16,7 @@ The recording hardware is modular, we will describe what different parts of the 
 1. the shank,
 2. the probe base,
 3. the headstage, and
-4. the basestation (a.k.a. Neuropixels module)
+4. the acquisition system (OneBox or Neuropixels module if using a PXI)
 
 <img src="images/probes_illustration.png" width="900">
 

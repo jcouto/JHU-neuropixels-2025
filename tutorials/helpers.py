@@ -271,58 +271,139 @@ Plot events:
 ############################ LOAD PHY DATA ####################################
 ###############################################################################
 
-def load_phy_folder(sortfolder):
+def waveforms_position(
+    waveforms,
+    channel_positions,
+    active_electrode_threshold=3,
+    max_waveform_extent=100,
+    ):
+    '''Calculates the position of a unit in a set of channels using the center of mass.
+Considers only electrodes that have over active_electrode_threshold (3) mad and 
+are within max_waveform_extent (100um) from the principal (max) electrode.
+
+Using the max_waveform_extent is useful when there is noise in the recording. 
+
+centerofmass,peak_channels = waveforms_position(waveforms,channel_positions)
+
+Inputs
+------
+waveforms : array [ncluster x nsamples x nchannels]
+    average waveform for a cluster 
+channel_positions : array [nchannels x 2]
+    x and y coordinates of each channel
+
+Return
+-------
+centerofmass: array [nchannels x 2]
+    center of mass of the waveforms 
+peak_channels array [nchannels x 1]
+    peak channel of the waveform (the argmax of the absolute amplitude)
+
+Joao Couto - spks 2023
     '''
-    Phy stores data as .npy and tab separated (.tsv) files in a folder.
+    nclusters, nsamples, nchannels = waveforms.shape
+    N = int(nsamples/4)
+    peak_to_peak = waveforms.max(axis=1) - waveforms.min(axis=1)
+    # get the threshold from the median_abs_deviation
+    channel_mad = np.median(peak_to_peak/0.6745, axis = 1)
+    active_electrodes = []
+    center_of_mass = []
+    peak_channels = []
+    for i,w in enumerate(peak_to_peak):
+        peak_channels.append(np.argmax(w)) # the peak channel is the index of the channel that has the largest deflection
+        idx = np.where(
+            (w>(channel_mad[i]*active_electrode_threshold)) & 
+            (np.linalg.norm(channel_positions - channel_positions[np.argmax(w)],axis = 1) < max_waveform_extent))[0]
+        active_electrodes.append(idx)
+        if not len(idx): # then there are no active channels..
+            center_of_mass.append([np.nan]*2)
+            continue
+        # compute the center of mass (X,Y) of the waveforms using only significant peaks
+        com = [w[idx]*pos for pos in channel_positions[idx].T]
+        center_of_mass.append(np.sum(com,axis = 1)/np.sum(w[idx]))
+    return np.array(center_of_mass), np.array(peak_channels), active_electrodes 
+    return np.array(center_of_mass), np.array(peak_channels), active_electrodes
 
-    This function reads the spike times and cluster identities from a folder and 
-computes the spike amplitudes and approximate spike locations (XY).
-
-    This is an approximate way of computing the spike depths since we don't 
-actually read the waveforms (so it is fast); we use the templates instead.
-
-Example:
- 
-spike_times,spike_clusters,spike_amplitudes,spike_positions,templates_raw,templates_position,cluster_groups = load_phy_folder(folder)
-
-    Joao Couto - CSHL Ion Channels 2023
- 
+def compute_spike_amplitudes(templates,whitening_matrix,spike_templates,spike_template_amplitudes, channel_positions):
     '''
-    # load the channel locations
-    channel_pos =  np.load(pjoin(sortfolder,'channel_positions.npy'))
-    # load each spike cluster number
-    spike_clusters = np.load(pjoin(sortfolder,'spike_clusters.npy'))
-    # load spiketimes
-    spike_times = np.load(pjoin(sortfolder,'spike_times.npy'))
-    # load spike templates (which template was fitted)
-    spike_templates = np.load(pjoin(sortfolder,'spike_templates.npy'))
-    # load the templates used to extract the spikes
-    templates =  np.load(pjoin(sortfolder,'templates.npy'))
-    # Load the amplitudes used to fit the template
-    spike_template_amplitudes = np.load(pjoin(sortfolder,'amplitudes.npy'))
-    # load the whitening matrix (to correct for the data having been whitened)
-    whitening_matrix = np.load(pjoin(sortfolder,'whitening_mat_inv.npy')).T
-    cluster_groups = pjoin(sortfolder,'cluster_group.tsv')
-    if os.path.exists(cluster_groups):
-        cluster_groups = pd.read_csv(cluster_groups,sep = '\t')
-    else:
-        cluster_groups = None
+    Compute the amplitude of each spike from the template fitting
+    '''
 
-    # the raw templates are the dot product of the templates by the whitening matrix
     templates_raw = np.dot(templates,whitening_matrix)
     # compute the peak to peak of each template
     templates_peak_to_peak = (templates_raw.max(axis = 1) - templates_raw.min(axis = 1))
     # the amplitude of each template is the max of the peak difference for all channels
     templates_amplitude = templates_peak_to_peak.max(axis=1)
+    templates_amplitude = templates_amplitude.copy()
+    # Fix for when kilosort returns NaN templates, make them the average of all templates
+    templates_amplitude[~np.isfinite(templates_amplitude)] = np.nanmean(templates_amplitude)
     # compute the center of mass (X,Y) of the templates
-    template_position = [templates_peak_to_peak*pos for pos in channel_pos.T]
-    template_position = np.vstack([np.sum(t,axis =1 )/np.sum(templates_peak_to_peak,axis = 1) 
-                                   for t in template_position]).T
+    template_position,template_channel, electrode_channels = waveforms_position(templates_raw, channel_positions)
     # get the spike positions and amplitudes from the average templates
-    spike_amplitudes = templates_amplitude[spike_templates]*spike_template_amplitudes
-    spike_positions = template_position[spike_templates,:].squeeze()
-    return spike_times,spike_clusters,spike_amplitudes,spike_positions,templates_raw,template_position,cluster_groups
+    spike_amplitudes = np.take(templates_amplitude,spike_templates)*spike_template_amplitudes
+    return spike_amplitudes
 
+def estimate_spike_positions_from_features(spike_templates,spike_pc_features,template_pc_features_ind,channel_positions,consider_feature=0):
+    '''
+    Estimates the spike 2d location based on a feature e.g the PCs.
+    
+    This is adapted from the cortexlab/spikes repository to estimate spikes based on the PC features.
+
+    Parameters
+    ----------
+    spike_templates: nspikes x templates used for each spike
+    spike_pc_features: nspikes x nfeatures x nchannels
+    template_pc_features_ind: indice of the channels for the templates nchannels
+    channel_positions: position of each channel
+    consider_feature: feature to consider
+
+    Returns
+    -------
+    spike_locations: nspikes
+
+    Joao Couto - spks 2023
+    '''
+    # channel index for each feature
+    feature_channel_idx = np.take(template_pc_features_ind,spike_templates.flatten().astype(int),axis=0)
+    # 2d coordinates for each channel feature
+    feature_coords = np.take(channel_positions,feature_channel_idx.flatten().astype(int),axis=0).reshape([*feature_channel_idx.shape,*channel_positions.shape[1:]])
+    # ycoords of those channels?
+    pc_features = spike_pc_features[:,consider_feature].squeeze()**2 # take the first pc for the features
+    spike_locations = (np.sum(feature_coords.transpose((2,0,1))*pc_features,axis=2)/np.sum(pc_features,axis=1)).T
+    return spike_locations
+
+def load_phy_folder(folder):
+    # we load the results in a dictionary so we don't accidentally confuse results from different sessions
+    res = dict(
+        # spiketimes and other
+        spike_times = np.load(folder.rglob('spike_times.npy').__next__()),
+        spike_clusters = np.load(folder.rglob('spike_clusters.npy').__next__()),
+        spike_templates = np.load(folder.rglob('spike_templates.npy').__next__()),
+        pc_features = np.load(folder.rglob('pc_features.npy').__next__()),
+        pc_feature_ind = np.load(folder.rglob('pc_feature_ind.npy').__next__()),
+        spike_template_amplitudes = np.load(folder.rglob('amplitudes.npy').__next__()),
+        # metrics for each cluster
+        metrics = pd.read_csv(folder.rglob('metrics.csv').__next__()),
+        # waveforms
+        channel_indices = np.load(folder.rglob('channel_map.npy').__next__()),
+        channel_positions = np.load(folder.rglob('channel_positions.npy').__next__()),
+        mean_waveforms = np.load(folder.rglob('mean_waveforms.npy').__next__()),
+        templates = np.load(folder.rglob('templates.npy').__next__()),
+        whitening_mat_inv = np.load(folder.rglob('whitening_mat_inv.npy').__next__())
+    )
+
+    # estimate the amplitudes from the template fitting
+    res['spike_amplitudes'] = compute_spike_amplitudes(templates = res['templates'],
+                                                    whitening_matrix= res['whitening_mat_inv'],
+                                                    spike_templates = res['spike_templates'],
+                                                    spike_template_amplitudes = res['spike_template_amplitudes'],
+                                                    channel_positions = res['channel_positions'])
+    # estimate the positions from the template fitting features
+    res['spike_positions'] = estimate_spike_positions_from_features(spike_templates=res['spike_templates'],
+                                        spike_pc_features = res['pc_features'],
+                                        template_pc_features_ind = res['pc_feature_ind'],
+                                        channel_positions = res['channel_positions'])
+    return res
 
 ###############################################################################
 #################     DOWNLOAD RAW DATA   #####################################
