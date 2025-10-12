@@ -95,7 +95,7 @@ def read_spikeglx_meta(metafile):
 def parse_coords_from_spikeglx_metadata(meta,shanksep = 250):
     '''
     Python version of the channelmap parser from spikeglx files.
-    Adapted from the matlab from Jeniffer Colonel
+    Adapted from the matlab from Jennifer Colonell
 
     Joao Couto - 2022
     '''
@@ -324,7 +324,9 @@ spike_times,spike_clusters,spike_amplitudes,spike_positions,templates_raw,templa
     return spike_times,spike_clusters,spike_amplitudes,spike_positions,templates_raw,template_position,cluster_groups
 
 
-#### Download data
+###############################################################################
+#################     DOWNLOAD RAW DATA   #####################################
+###############################################################################
 
 def download_dataset(dataset_name, output_path = None):
     if dataset_name in  ['help','info']:
@@ -370,19 +372,25 @@ This dataset was prepared by Jennifer Colonell (HHMI Janelia)
         ''')
         return
     if dataset_name == 'chronic_stimulus':
-        file_list = dict(AL032_stimulus = '1Ba5e__UU3ZLBe7NckMxomhQzI4aixeBP',
-                         AL032_out = '1YdQ_61iBpVbV8o36IIDlegeTWkADBuBj')
+        file_list = dict(AL032_stimulus = '1ecWZdG-xjWCNq37hop1Go1__WkxVv5Lo',
+                         AL032_out = '12AtIm-y2JbygTFGcg5yC_3XKiVcYoe2I',)
     elif dataset_name == 'chronic_sorting_output':
-        file_list = dict(AL032_out = '1YdQ_61iBpVbV8o36IIDlegeTWkADBuBj')
+        file_list = dict(AL032_out = '12AtIm-y2JbygTFGcg5yC_3XKiVcYoe2I')
+    elif dataset_name == 'chronic_raw':
+        file_list = dict(AL032 = '16asaS_ZAxxQk8iYlptyPWl3BTr0tcW0Y')
+    else:
+        raise(ValueError(f'Unknown dataset {dataset_name}.'))
     try:
-        from gdown import download_folder
+        from gdown import download
     except ImportError:
         print('\n\n\n gdown is not installed. will attempt to install it now...\n\n\n')
         import os
         os.system('pip install gdown')
-        from gdown import download_folder
+        from gdown import download
 
     from pathlib import Path
+    import zipfile
+
     if output_path is None:
         output_path = '.'
     output_path = Path(output_path).absolute()
@@ -392,4 +400,9 @@ This dataset was prepared by Jennifer Colonell (HHMI Janelia)
             (output_path/k).mkdir(parents=True)
         else:
             print(f'Path {output_path/k} is there; delete it if you want to download the dataset again.')    
-        download_folder(id = file_list[k], output = str(output_path/k))
+        zippath = output_path/k/f'{k}.zip'
+        download(id = file_list[k], output = str(zippath))
+
+        folderpath = output_path/k/f'{k}'
+        with zipfile.ZipFile(str(zippath), 'r') as zf:
+            zf.extractall(output_path)
