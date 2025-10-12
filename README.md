@@ -6,10 +6,9 @@ The goal of the tutorials is to show how to navigate spike sorting outputs to re
 
 ## Outline:
 
-  1. References and links
-  2. Installing a **python environment**
-  3. Brief description of Neuropixels hardware
-  4. Notebook tutorials
+ - [Brief description of Neuropixels hardware](#brief-description-of-neuropixels-hardware)
+ - [Installation](#installing-a-python-environment)
+ - [References and links](#references-and-links)
 
 ## Brief description of Neuropixels hardware
 
