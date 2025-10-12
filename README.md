@@ -6,6 +6,11 @@ The goal of the tutorials is to show how to navigate spike sorting outputs to re
 
 ## Outline:
 
+ - **Tutorials**
+   - [download example data](tutorials/00_download_data.ipynb)
+   - [binary file formats and plot raw data in python](tutorials/01_file_formats_plot_raw.ipynb)
+   - [load phy output and plot depth and drift rasters](tutorials/02_load_output.ipynb)
+   - [explore responses to visual stimuli](tutorials/03_visual_response.ipynb)
  - [Brief description of Neuropixels hardware](#brief-description-of-neuropixels-hardware) see also [the sheet](sheets/neuropixels_hardware_overview.png)
  - [Installation](#installing-a-python-environment)
  - [References and links](#references-and-links)
