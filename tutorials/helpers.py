@@ -454,9 +454,9 @@ This dataset was prepared by Jennifer Colonell (HHMI Janelia)
         return
     if dataset_name == 'chronic_stimulus':
         file_list = dict(AL032_stimulus = '1ecWZdG-xjWCNq37hop1Go1__WkxVv5Lo',
-                         AL032_out = '12AtIm-y2JbygTFGcg5yC_3XKiVcYoe2I',)
+                         AL032_out = '1ko94OPRynre9AsTwHvTTiNbuK7dtZSRJ',)
     elif dataset_name == 'chronic_sorting_output':
-        file_list = dict(AL032_out = '12AtIm-y2JbygTFGcg5yC_3XKiVcYoe2I')
+        file_list = dict(AL032_out = '1ko94OPRynre9AsTwHvTTiNbuK7dtZSRJ')
     elif dataset_name == 'chronic_raw':
         file_list = dict(AL032 = '16asaS_ZAxxQk8iYlptyPWl3BTr0tcW0Y')
     else:
@@ -487,3 +487,27 @@ This dataset was prepared by Jennifer Colonell (HHMI Janelia)
         folderpath = output_path/k/f'{k}'
         with zipfile.ZipFile(str(zippath), 'r') as zf:
             zf.extractall(output_path)
+
+
+def plot_drift_raster(spiketimes,spikepositions,spikeamplitudes, n_spikes_to_plot = 200000,cmap = 'Spectral_r',clim=[0,10000],markersize = 0.3):
+    import pylab as plt
+
+    plt.figure(figsize = [12,4])
+
+    # randomly subsample n_spikes_to_plot spikes
+    subsample = np.random.choice(np.arange(len(spiketimes),dtype=int),n_spikes_to_plot,replace = False)
+
+    # sort by the amplitude so the color is seen
+    subsample = subsample[np.argsort(spikeamplitudes[subsample])]
+
+    spikes = spiketimes[subsample]
+
+    plt.scatter(spikes,
+                spikepositions[subsample][:,1],
+                markersize,
+                spikeamplitudes[subsample],
+                clim=clim, 
+                cmap = cmap)
+
+    plt.ylim([spikepositions[subsample][:,1].min(),spikepositions[subsample][:,1].max()])
+    plt.xlim([spikes.min(),spikes.max()])
