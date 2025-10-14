@@ -98,7 +98,14 @@ In short, the _minimum requirements_ for an **acquisition computer**  are:
 
 ## Installing a python environment
 
-To install start by getting [Anaconda](https://www.anaconda.com/distribution/#download-section) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Install also [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Run the following commands from a terminal window (Anaconda prompt or git Bash on Windows, the Mac OS terminal). 
+To install start by getting [Anaconda](https://www.anaconda.com/distribution/#download-section), [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or [Miniforge](https://github.com/conda-forge/miniforge). Install also [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). Run the following commands from a terminal window (Anaconda prompt or git Bash on Windows, the Mac OS terminal). 
+
+ - Create an environment for kilosort and analysis:
+   1. ``conda create -n npix-analysis python=3.12 pytorch torchvision torchaudio pytorch-cuda=12.1 pandas natsort ipympl ipywidgets jupyterlab_widgets boto3 pyqt pyqtgraph scikit-learn scipy jupyterlab zarr -c pytorch -c nvidia`` note that for installation on M1 mac's you need to remove **pytorch-cuda=12.1**
+   2. ``pip install kilosort[gui]``
+  
+ 
+    
 
 
 ## References and links
