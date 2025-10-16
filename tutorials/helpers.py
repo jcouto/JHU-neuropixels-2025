@@ -70,10 +70,14 @@ def read_spikeglx_meta(metafile):
     with open(metafile,'r') as f:
         meta = {}
         for ln in f.readlines():
-            tmp = ln.split('=')
-            k,val = tmp
-            k = k.strip()
-            val = val.strip('\r\n')
+            try:
+                tmp = ln.split('=')
+                k,val = tmp
+                k = k.strip()
+                val = val.strip('\r\n')
+            except:
+                print(f'Skipping {tmp}')
+                continue
             if '~' in k:
                 meta[k.strip('~')] = val.strip('(').strip(')').split(')(')
             else:
